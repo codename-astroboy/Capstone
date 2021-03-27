@@ -1,3 +1,5 @@
+#include <ros.h>
+
 #include <Wire.h>
 
 #include <ros.h>
@@ -5,10 +7,10 @@
 
 #define TCAADDR 0x70
 
-ros::NodeHandle  nh;
+//ros::NodeHandle  nh;
 
-std_msgs::String str_msg;
-ros::Publisher chatter("chatter", &str_msg);
+//std_msgs::String str_msg;
+//ros::Publisher chatter("chatter", &str_msg);
 char hello[13] = "hello world!";
 
 int x = 0;
@@ -41,16 +43,22 @@ void setup()
  Wire.endTransmission(true);
  Serial.println ("Done 1");
  
+ tcaselect(2);
+ Wire.beginTransmission(MPU_addr);
+ Wire.write(0x6B);  // PWR_MGMT_1 register
+ Wire.write(0);     // set to zero (wakes up the MPU-6050)
+ Wire.endTransmission(true);
+ Serial.println ("Done 1");
+ 
  tcaselect(3);
  Wire.beginTransmission(MPU_addr);
  Wire.write(0x6B);  // PWR_MGMT_1 register
  Wire.write(0);     // set to zero (wakes up the MPU-6050)
  Wire.endTransmission(true);
  Serial.println ("Done 3");
- 
 // ----------------------FOR ROS node--------start--------
-nh.initNode();
-nh.advertise(chatter);
+// nh.initNode();
+// nh.advertise(chatter);
 //--------------------FOR ROS node -------- end --------
 }
 
@@ -69,6 +77,7 @@ for(int x=0; x<4; x++){
  GyX=Wire.read()<<8|Wire.read();  // 0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
  GyY=Wire.read()<<8|Wire.read();  // 0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
  GyZ=Wire.read()<<8|Wire.read();  // 0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
+Serial.print("PORT: (");Serial.print(x); Serial.print(")\t");
 Serial.print(AcX); Serial.print("\t");
 Serial.print(AcY); Serial.print("\t");
 Serial.print(AcZ); Serial.print("\t");
@@ -76,12 +85,12 @@ Serial.print(Tmp/340.00+36.53); Serial.print("\t"); //equation for temperature i
 Serial.print(GyX); Serial.print("\t");
 Serial.print(GyY); Serial.print("\t");
 Serial.println(GyZ); 
-delay(100);
+delay(10);
 
 // ----------------------FOR ROS node--------start--------
- str_msg.data = hello;
- chatter.publish( &str_msg );
- nh.spinOnce();
+//  str_msg.data = hello;
+ // chatter.publish( &str_msg );
+ // nh.spinOnce();
   //--------------------FOR ROS node -------- end --------
 }
 
